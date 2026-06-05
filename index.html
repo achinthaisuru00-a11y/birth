@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Angelina's AR Surprise</title>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <script>
+        // තෑගි පෙට්ටිය Click කරාම වෙන දේ පාලනය කරන Custom Logic එක
+        AFRAME.registerComponent('gift-logic', {
+            init: function () {
+                let box = this.el; // 3D පෙට්ටිය
+                let photo = document.querySelector('#angelina-photo'); // හැංගිලා තියෙන ෆොටෝ එක
+                let audio = document.querySelector('#voice-msg'); // හැංගිලා තියෙන Audio එක
+
+                // ෆෝන් ස්ක්‍රීන් එකෙන් පෙට්ටිය ටැප් කරාම
+                box.addEventListener('click', function () {
+                    // 1. පෙට්ටිය අතුරුදහන් කරනවා
+                    box.setAttribute('visible', 'false');
+                    
+                    // 2. ෆොටෝ එක මතු කරනවා (Animation එකක් එක්ක)
+                    photo.setAttribute('visible', 'true');
+                    photo.setAttribute('animation', 'property: scale; from: 0 0 0; to: 2 2 2; dur: 1500; easing: easeOutElastic');
+                    
+                    // 3. Audio එක Play කරනවා
+                    audio.play();
+                });
+            }
+        });
+    </script>
+</head>
+
+<body style="margin: 0; overflow: hidden;">
+    
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" cursor="rayOrigin: mouse" raycaster="objects: .clickable">
+        
+        <a-assets>
+            <img id="my-photo" src="angelina.jpg"> <audio id="voice-msg" src="your-voice.mp3"></audio> </a-assets>
+
+        <a-marker preset="hiro">
+            
+            <a-box position="0 0.5 0" 
+                   material="color: #ff4d4d; metalness: 0.5; roughness: 0.2;" 
+                   animation="property: rotation; to: 0 360 0; loop: true; dur: 4000; easing: linear"
+                   class="clickable"
+                   gift-logic>
+            </a-box>
+
+            <a-image id="angelina-photo" 
+                     src="#my-photo" 
+                     position="0 1 0" 
+                     rotation="-90 0 0" 
+                     visible="false">
+            </a-image>
+
+        </a-marker>
+
+        <a-entity camera></a-entity>
+    </a-scene>
+
+</body>
+</html>
