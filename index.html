@@ -2,55 +2,92 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Angelina's AR Surprise</title>
+    <title>Angelina's Surprise</title>
     
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <style>
+        body, html { margin: 0; padding: 0; overflow: hidden; background-color: black; }
+        
+        /* පසුබිමෙන් කැමරාව පෙන්වන Video එක */
+        #camera-feed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -1; /* 3D එකට යටින් තියන්නේ */
+        }
+
+        /* 3D Scene එක කැමරාවට උඩින් තියන්නේ */
+        #ar-scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+    </style>
 
     <script>
-        // තෑගි පෙට්ටිය Click කරාම වෙන දේ පාලනය කරන Custom Logic එක
+        // තෑගි පෙට්ටිය Click කරාම වෙන දේ
         AFRAME.registerComponent('gift-logic', {
             init: function () {
-                let box = this.el; // 3D පෙට්ටිය
-                let photo = document.querySelector('#angelina-photo'); // හැංගිලා තියෙන ෆොටෝ එක
-                let audio = document.querySelector('#voice-msg'); // හැංගිලා තියෙන Audio එක
+                let box = this.el; 
+                let photo = document.querySelector('#angelina-photo'); 
+                let audio = document.querySelector('#voice-msg'); 
 
-                // ෆෝන් ස්ක්‍රීන් එකෙන් පෙට්ටිය ටැප් කරාම
                 box.addEventListener('click', function () {
-                    // 1. පෙට්ටිය අතුරුදහන් කරනවා
+                    // පෙට්ටිය අතුරුදහන් කරනවා
                     box.setAttribute('visible', 'false');
                     
-                    // 2. ෆොටෝ එක මතු කරනවා (Animation එකක් එක්ක)
+                    // ෆොටෝ එක මතු කරනවා (Zoom in animation එකක් එක්ක)
                     photo.setAttribute('visible', 'true');
-                    photo.setAttribute('animation', 'property: scale; from: 0 0 0; to: 2.5 2.5 2.5; dur: 1500; easing: easeOutElastic');
+                    photo.setAttribute('animation', 'property: scale; from: 0 0 0; to: 1.5 1.5 1.5; dur: 1500; easing: easeOutElastic');
                     
-                    // 3. Audio එක Play කරනවා
+                    // Audio එක Play කරනවා
                     audio.play();
                 });
             }
         });
+
+        // වෙබ් පිටුව ලෝඩ් වෙද්දිම පසුබිම් කැමරාව ඔන් කරන කෝඩ් එක
+        window.addEventListener('load', () => {
+            const video = document.getElementById('camera-feed');
+            
+            // ෆෝන් එකේ පිටිපස්සේ කැමරාව (environment camera) ඉල්ලනවා
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then((stream) => {
+                video.srcObject = stream;
+            })
+            .catch((err) => {
+                console.error("Camera access denied or not available: ", err);
+                alert("Please allow camera access to see the magic!");
+            });
+        });
     </script>
 </head>
+<body>
 
-<body style="margin: 0; overflow: hidden;">
-    
-    <a-scene embedded 
-             arjs="sourceType: webcam; sourceWidth:1280; sourceHeight:960; displayWidth: 1280; displayHeight: 960; debugUIEnabled: false;" 
-             vr-mode-ui="enabled: false"
-             cursor="rayOrigin: mouse" 
-             raycaster="objects: .clickable">
-        
-        <a-assets>
-            <img id="my-photo" src="angelina.jpg"> 
-            <audio id="voice-msg" src="your-voice.mp3"></audio> 
-        </a-assets>
+    <video id="camera-feed" autoplay muted playsinline></video>
 
-        <a-marker preset="hiro">
-            
-            <a-box position="0 0.5 0" 
-                   material="color: #ff4d4d; metalness: 0.5; roughness: 0.2;" 
+    <div id="ar-scene">
+        <a-scene vr-mode-ui="enabled: false" 
+                 cursor="rayOrigin: mouse" 
+                 raycaster="objects: .clickable"
+                 background="transparent: true"> <a-assets>
+                <img id="my-photo" src="angelina.jpg"> 
+                <audio id="voice-msg" src="your-voice.mp3"></audio> 
+            </a-assets>
+
+            <a-camera position="0 1.6 0"></a-camera>
+
+            <a-box position="0 1.5 -3" 
+                   material="color: #ff4d4d; metalness: 0.3; roughness: 0.4;" 
                    animation="property: rotation; to: 0 360 0; loop: true; dur: 4000; easing: linear"
                    class="clickable"
                    gift-logic>
@@ -58,15 +95,12 @@
 
             <a-image id="angelina-photo" 
                      src="#my-photo" 
-                     position="0 1 0" 
-                     rotation="-90 0 0" 
+                     position="0 1.5 -2.5" 
                      visible="false">
             </a-image>
 
-        </a-marker>
-
-        <a-entity camera></a-entity>
-    </a-scene>
+        </a-scene>
+    </div>
 
 </body>
 </html>
